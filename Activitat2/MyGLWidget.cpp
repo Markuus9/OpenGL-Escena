@@ -70,12 +70,27 @@ void MyGLWidget::initializeGL ()
 }
 
 void MyGLWidget::ini_variables(){
-	//angleX = -M_PI/4.0;
-	//angleY = 0;
+	makeCurrent();
 	movimentLuke = 0;
 	rotacioLuke = 0;
-	factorAngleX = 3; 
-	factorAngleY = 2;
+	factorAngleX = 1; 
+	factorAngleY = 0.5;
+	numtrees = 5;
+	angleArbre = 0;
+	PosicioLuke = glm::vec3(0,0,0);
+	emit setDegrees(angleArbre);
+	emit numTrees(numtrees);
+	if(escalaArbres==nullptr){
+		escalaArbres = new glm::vec3[numtrees];
+		rotacioArbres = new float[numtrees];
+		posicioArbres = new glm::vec3[numtrees];
+		for (int i = 0; i<numtrees; i++){
+			escalaArbres[i] = glm::vec3(glm::linearRand(0.08f, 0.13f));
+			rotacioArbres[i] = glm::linearRand(0.00f, 360.0f);
+			posicioArbres[i] = glm::vec3(glm::linearRand(-5.0f, 5.0f),0,glm::linearRand(-5.0f, 5.0f));
+		}
+	}
+	update();
 }
 
 void MyGLWidget::iniEscena ()
@@ -101,25 +116,47 @@ void MyGLWidget::iniCamera() {
     projectTransform();
 }
 
+void MyGLWidget::viewTransformOrtho (){
+	glm::vec3 UP = glm::vec3(0,0,-1);
+	glm::vec3 VRP = centreEscena;
+	glm::vec3 OBS = glm::vec3(centreEscena.x,d,centreEscena.z);
+	glm::mat4 View(1.0f);
+  View = glm::lookAt(OBS,VRP,UP);
+  glUniformMatrix4fv (viewLoc, 1, GL_FALSE, &View[0][0]);
+}
+
 void MyGLWidget::viewTransform ()
 {
-		//std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << angleX << " " << std::endl;
-		//std::cout << angleY << " " << std::endl;
     // Matriu de posició i orientació de l'observador
     glm::mat4 View(1.0f);
     vrp = centreEscena; 
-    View = glm::translate(View,glm::vec3(0.,0.,-28));
+    View = glm::translate(View,glm::vec3(0.,0.,-d));
 		View = glm::rotate(View,glm::radians(-angleX),glm::vec3(1.0,0.0,0.0));
 		View = glm::rotate(View,glm::radians(-angleY),glm::vec3(0.0,1.0,0.0));
 		View = glm::translate(View,glm::vec3(-vrp.x,-vrp.y,-vrp.z));
     glUniformMatrix4fv (viewLoc, 1, GL_FALSE, &View[0][0]);
 }
 
+void MyGLWidget::projectTransformOrtho (){
+	float right = radiEscena;
+	float left = -radiEscena;
+	float top = right;
+	float bottom = left;
+	if(ra>1.0){
+		right = radiEscena*ra;
+		left = -right; 
+	} else if(ra<1.0){
+		top = radiEscena/ra; 
+		bottom = -top;
+	}
+	float Znear = d-radiEscena;
+	float Zfar = d+radiEscena;
+	glm::mat4 Proj=glm::ortho(left, right, bottom, top, Znear, Zfar);
+	glUniformMatrix4fv (projLoc, 1, GL_FALSE, &Proj[0][0]);
+}
+
 void MyGLWidget::projectTransform ()
 {
-		std::cout << "--------------------------------------------------" << std::endl;
-		//std::cout << ra << " " << std::endl;
     glm::mat4 Proj(1.0f);
 		fov = glm::asin(radiEscena/d);
 		if(ra<1){
@@ -129,7 +166,6 @@ void MyGLWidget::projectTransform ()
 		zfar = d+radiEscena;
 		fov = fov*2;
 		Proj = glm::perspective (fov, ra, znear, zfar);
-		std::cout << fov << " " << std::endl;
     glUniformMatrix4fv (projLoc, 1, GL_FALSE, &Proj[0][0]);
 }
 
@@ -143,8 +179,6 @@ void MyGLWidget::paintGL ()
   
   treeTransform();
   //glDrawArrays(GL_TRIANGLES, 0, models[TREE].faces().size()*3);
-  //emit nArbres(numeroArbres);
-	//setTrees(numeroArbres);
 
   glBindVertexArray (VAO_models[LUKE]);
   LukeTransform();
@@ -156,9 +190,13 @@ void MyGLWidget::paintGL ()
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
   glBindVertexArray (0);
-  
-  viewTransform();
-  projectTransform();
+  if(!ortho){
+    	viewTransform();
+    	projectTransform();
+  } else {
+  		viewTransformOrtho();
+  		projectTransformOrtho();
+  }
 }
 
 void MyGLWidget::resizeGL (int w, int h)
@@ -177,25 +215,74 @@ void MyGLWidget::resizeGL (int w, int h)
 #endif
 }
 
+void MyGLWidget::rotateTree(int degrees){
+	makeCurrent();
+	angleArbre = degrees;
+	for (int i = 0; i<numtrees; i++){
+		rotacioArbresControlada[i] = degrees + rotacioArbres[i];
+	}
+	update();
+}
+
+void MyGLWidget::resetView(){
+	makeCurrent();
+	initializeGL();
+	emit setOrtho(ortho);
+	emit setPers(!ortho);
+	update();
+}
+
+void MyGLWidget::PersView(bool view){
+	makeCurrent();
+	ortho = !view;
+	emit setOrtho(ortho);
+	emit setPers(!ortho);
+	viewTransform();
+  projectTransform();
+	update();
+}
+
+void MyGLWidget::orthoView(bool view){
+	makeCurrent();
+	ortho = view;
+	emit setOrtho(ortho);
+	emit setPers(!ortho);
+	viewTransformOrtho();
+  projectTransformOrtho();
+	update();
+}
+
 void MyGLWidget::setTrees(int numTrees){
 	makeCurrent();
-	numtrees = numTrees;
-	if(escalaArbres != nullptr){
-		delete[]  escalaArbres;
-		delete[]  rotacioArbres;
-		delete[]  posicioArbres;
-	}
-	escalaArbres = new glm::vec3[numTrees];
-	rotacioArbres = new float[numTrees];
-	posicioArbres = new glm::vec3[numTrees];
-	std::cout << "--------------------------------------------------" << std::endl;
-	for (int i = 0; i<numTrees; i++){
-		escalaArbres[i] = glm::vec3(glm::linearRand(0.08f, 0.13f));
-		rotacioArbres[i] = glm::linearRand(0.00f, 360.0f);
-		posicioArbres[i] = glm::vec3(glm::linearRand(-5.0f, 5.0f),0,glm::linearRand(-5.0f, 5.0f));
-		std::cout << posicioArbres[i].x << " " << posicioArbres[i].z << std::endl;
-	}
-		//std::cout << "--------------------------------------------------" << std::endl;
+	if (numTrees > numtrees) {
+      glm::vec3* newEscalaArbres = new glm::vec3[numTrees];
+      float* newRotacioArbres = new float[numTrees];
+      glm::vec3* newPosicioArbres = new glm::vec3[numTrees];
+
+      for (int i = 0; i < numtrees; ++i) {
+          newEscalaArbres[i] = escalaArbres[i];
+          newRotacioArbres[i] = rotacioArbres[i];
+          newPosicioArbres[i] = posicioArbres[i];
+      }
+
+      for (int i = numtrees; i < numTrees; ++i) {
+          newEscalaArbres[i] = glm::vec3(glm::linearRand(0.08f, 0.13f));
+          newRotacioArbres[i] = glm::linearRand(0.00f, 360.0f);
+          newPosicioArbres[i] = glm::vec3(glm::linearRand(-5.0f, 5.0f), 0, glm::linearRand(-5.0f, 5.0f));
+      }
+
+      delete[] escalaArbres;
+      delete[] rotacioArbres;
+      delete[] posicioArbres;
+      escalaArbres = newEscalaArbres;
+      rotacioArbres = newRotacioArbres;
+      posicioArbres = newPosicioArbres;
+      
+    } 
+  numtrees = numTrees;
+  for(int i = 0; i < numtrees; ++i){
+  	rotacioArbresControlada[i] = rotacioArbres[i] + angleArbre;
+  }
   update();
 }
 
@@ -203,10 +290,11 @@ void MyGLWidget::treeTransform ()
 {
   for (int i = 0; i<numtrees; i++){
     glm::mat4 TG(1.0f);
-    TG = glm::translate(TG, posicioArbres[i]);
     TG = glm::scale(TG, glm::vec3(escalaArbres[i]));
+    //TG = glm::scale(TG, glm::vec3(escalaArbres[i])); //REVISAR
     TG = glm::translate(TG, -centreBaseModels[TREE]);
-		TG = glm::rotate(TG, glm::radians(rotacioArbres[i]), glm::vec3(0.0, 1.0, 0.0));
+    TG = glm::translate(TG, posicioArbres[i]);
+		TG = glm::rotate(TG, glm::radians(rotacioArbresControlada[i]), glm::vec3(0.0, 1.0, 0.0));
   	glUniformMatrix4fv(transLoc, 1, GL_FALSE, &TG[0][0]);
   	glDrawArrays(GL_TRIANGLES, 0, models[TREE].faces().size()*3);
 	}
@@ -219,18 +307,20 @@ void MyGLWidget::LukeTransform()
   glm::vec3 centreLuke = glm::vec3(0,0,0);
   calculaCapsaModel(models[LUKE], escala, 1.0, centreLuke);
   TG = glm::scale(TG, glm::vec3(escala));
-  //TG = glm::translate(TG, glm::vec3(0,0,-movimentLuke));
-  // Calcula la dirección en la que mira Luke basado en rotacioLuke
 	glm::vec3 direccionLuke = glm::vec3(-sin(rotacioLuke), 0.0f, -cos(rotacioLuke));
-
-	// Normaliza el vector de dirección
 	direccionLuke = glm::normalize(direccionLuke);
-
-	// Mueve a Luke en la dirección en la que está mirando
-	TG = glm::translate(TG, direccionLuke * -movimentLuke);
+	glm::vec3 posicio = (direccionLuke * -movimentLuke);
+	//std::cout << "-------------------------------------------------" << std::endl;
+	//std::cout << posicio.x << " " << posicio.z << " "<< std::endl;
+	if(posicio.x < 170.0 and posicio.x > -170.0 and posicio.z < 170.0 and posicio.z > -170.0){
+		PosicioLuke = posicio;
+		TG = glm::translate(TG, direccionLuke * -movimentLuke);
+	} else {
+		movimentLuke -= 10;
+		TG = glm::translate(TG, PosicioLuke);
+	}
   TG = glm::translate(TG, -centreBaseModels[LUKE]);
   TG = glm::rotate(TG, rotacioLuke, glm::vec3(0.0, 1.0, 0.0));
-
   glUniformMatrix4fv(transLoc, 1, GL_FALSE, &TG[0][0]);
 }
 
@@ -259,13 +349,32 @@ void MyGLWidget::keyPressEvent(QKeyEvent* event)
       break;
     }
     case Qt::Key_C: { 
-
+			orthoView(!ortho);
+			if(!ortho){
+		  	viewTransform();
+		  	projectTransform();
+			} else {
+				viewTransformOrtho();
+				projectTransformOrtho();
+			}
       break;
-        }
+    }
     case Qt::Key_R: { // reset
-
-      break;
-        }  
+			resetView();
+    break;
+    }
+    case Qt::Key_Plus: {
+        angleArbre += 10;
+        setDegrees(angleArbre);
+        rotateTree(angleArbre);
+        break;
+    }
+    case Qt::Key_Minus: { 
+        angleArbre -= 10;
+        emit setDegrees(angleArbre);
+        rotateTree(angleArbre);
+        break;
+    }  
     default: event->ignore(); break;
   }
   update();
@@ -290,32 +399,19 @@ void MyGLWidget::mousePressEvent (QMouseEvent *e)
 
 void MyGLWidget::mouseMoveEvent(QMouseEvent *e)
 {
-	makeCurrent();
-	if ( (e->buttons() == Qt::LeftButton) && !(e->modifiers() & Qt::ShiftModifier) ) {
-		// Gir al voltant de l'eix Y
-		angleY += (e->x() - xClick)*factorAngleY;
-		xClick = e->x();
-		
-		// Gir al voltant de l'eix X
-		angleX += (e->y() - yClick)*factorAngleX;
-		yClick = e->y();
-	}
-	/*if ((e->buttons() == Qt::LeftButton) && (e->modifiers() & Qt::ShiftModifier) ) {
-		float diferencia = e->y()-yAnt;
-		yAnt = e->y();
-		if (diferencia < 0.0) {
-			// Zoom-in
-			zoomPers -= glm::radians(zoomValue);
-    	//zoomOrtho -= zoomValue/4.0;
-		}
-		else if (diferencia > 0.0) {
-			// Zoom-out
-			zoomPers += glm::radians(zoomValue);
-    	//zoomOrtho += zoomValue/4.0;
+	if(!ortho){
+		makeCurrent();	
+		if ( (e->buttons() == Qt::LeftButton) && !(e->modifiers() & Qt::ShiftModifier) ) {
+			// Gir al voltant de l'eix Y
+			angleY += (e->x() - xClick)*factorAngleY;
+			xClick = e->x();
+			
+			// Gir al voltant de l'eix X
+			angleX += (e->y() - yClick)*factorAngleX;
+			yClick = e->y();
 		}
 		update();
-	}*/
-	update();
+	}
 }
 
 

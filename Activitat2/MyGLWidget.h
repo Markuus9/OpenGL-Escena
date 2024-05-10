@@ -38,11 +38,14 @@ class MyGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core  {
     virtual void iniEscena ();
     virtual void iniCamera ();
     virtual void viewTransform ();
+    virtual void viewTransformOrtho ();
     virtual void projectTransform ();
+    virtual void projectTransformOrtho ();
 
    glm::vec3 *posicioArbres = nullptr;
    glm::vec3 *escalaArbres = nullptr;
    float *rotacioArbres = nullptr;
+   float rotacioArbresControlada[30];
    int numtrees;
   
    // glm::vec3 dirLuke, posLuke;
@@ -59,8 +62,15 @@ class MyGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core  {
     
 public slots:
     void setTrees(int numTrees);
+    void orthoView(bool view);
+    void PersView(bool view);
+    void resetView();
+    void rotateTree(int degrees);
 signals:
-		void nArbres(int);
+		void numTrees(int);
+		void setOrtho(bool);
+		void setPers(bool);
+		void setDegrees(int);
 
   private:
   
@@ -71,9 +81,13 @@ signals:
     float angleX;
     float angleY;
     
+    // rotació arbres amb + i -
+    int angleArbre;
+    
     // bools per controlar si càmera en planta o no
     bool ortho;
-
+		// Control de la posicio de Luke
+		glm::vec3 PosicioLuke;
 
     GLuint vertexLoc, colorLoc;
 

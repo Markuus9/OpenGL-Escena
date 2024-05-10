@@ -11,6 +11,8 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QDial>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
@@ -28,6 +30,10 @@ public:
     MyGLWidget *widget;
     QVBoxLayout *verticalLayout;
     QSpinBox *spinBox;
+    QCheckBox *checkBox;
+    QCheckBox *checkBox_2;
+    QDial *dial;
+    QPushButton *pushButton_2;
     QSpacerItem *verticalSpacer;
     QPushButton *pushButton;
 
@@ -59,6 +65,29 @@ public:
 
         verticalLayout->addWidget(spinBox);
 
+        checkBox = new QCheckBox(MyForm);
+        checkBox->setObjectName(QString::fromUtf8("checkBox"));
+        checkBox->setChecked(false);
+
+        verticalLayout->addWidget(checkBox);
+
+        checkBox_2 = new QCheckBox(MyForm);
+        checkBox_2->setObjectName(QString::fromUtf8("checkBox_2"));
+        checkBox_2->setChecked(true);
+
+        verticalLayout->addWidget(checkBox_2);
+
+        dial = new QDial(MyForm);
+        dial->setObjectName(QString::fromUtf8("dial"));
+        dial->setMaximum(360);
+
+        verticalLayout->addWidget(dial);
+
+        pushButton_2 = new QPushButton(MyForm);
+        pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
+
+        verticalLayout->addWidget(pushButton_2);
+
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
@@ -81,7 +110,14 @@ public:
         retranslateUi(MyForm);
         QObject::connect(pushButton, SIGNAL(clicked()), MyForm, SLOT(close()));
         QObject::connect(spinBox, SIGNAL(valueChanged(int)), widget, SLOT(setTrees(int)));
-        QObject::connect(widget, SIGNAL(nArbres(int)), spinBox, SLOT(setValue(int)));
+        QObject::connect(checkBox, SIGNAL(clicked(bool)), widget, SLOT(orthoView(bool)));
+        QObject::connect(checkBox_2, SIGNAL(clicked(bool)), widget, SLOT(PersView(bool)));
+        QObject::connect(widget, SIGNAL(setPers(bool)), checkBox_2, SLOT(setChecked(bool)));
+        QObject::connect(widget, SIGNAL(setOrtho(bool)), checkBox, SLOT(setChecked(bool)));
+        QObject::connect(pushButton_2, SIGNAL(clicked()), widget, SLOT(resetView()));
+        QObject::connect(widget, SIGNAL(setDegrees(int)), dial, SLOT(setValue(int)));
+        QObject::connect(dial, SIGNAL(valueChanged(int)), widget, SLOT(rotateTree(int)));
+        QObject::connect(widget, SIGNAL(numTrees(int)), spinBox, SLOT(setValue(int)));
 
         QMetaObject::connectSlotsByName(MyForm);
     } // setupUi
@@ -89,6 +125,9 @@ public:
     void retranslateUi(QWidget *MyForm)
     {
         MyForm->setWindowTitle(QCoreApplication::translate("MyForm", "IDI-Lab", nullptr));
+        checkBox->setText(QCoreApplication::translate("MyForm", "Ortonogal", nullptr));
+        checkBox_2->setText(QCoreApplication::translate("MyForm", "Perspectiva", nullptr));
+        pushButton_2->setText(QCoreApplication::translate("MyForm", "Reset", nullptr));
         pushButton->setText(QCoreApplication::translate("MyForm", "&Sortir", nullptr));
     } // retranslateUi
 

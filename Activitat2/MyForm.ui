@@ -43,6 +43,40 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="checkBox">
+       <property name="text">
+        <string>Ortonogal</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_2">
+       <property name="text">
+        <string>Perspectiva</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDial" name="dial">
+       <property name="maximum">
+        <number>360</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="text">
+        <string>Reset</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -85,12 +119,19 @@
     <signal>resetArbresCheckBox(bool)</signal>
     <signal>setPlantaRadio(bool)</signal>
     <signal>setTerceraPersonaRadio(bool)</signal>
-    <signal>nArbres(int)</signal>
+    <signal>setOrtho(bool)</signal>
+    <signal>setPers(bool)</signal>
+    <signal>setDegrees(int)</signal>
+    <signal>numTrees(int)</signal>
     <slot>showTrees(bool)</slot>
     <slot>resetCamera()</slot>
     <slot>changeCamera(int)</slot>
     <slot>createTrees(int)</slot>
     <slot>setTrees(int)</slot>
+    <slot>orthoView(bool)</slot>
+    <slot>PersView(bool)</slot>
+    <slot>resetView()</slot>
+    <slot>rotateTree(int)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -129,20 +170,135 @@
    </hints>
   </connection>
   <connection>
+   <sender>checkBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>widget</receiver>
+   <slot>orthoView(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>947</x>
+     <y>49</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>895</x>
+     <y>225</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_2</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>widget</receiver>
+   <slot>PersView(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>942</x>
+     <y>81</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>901</x>
+     <y>284</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>widget</sender>
-   <signal>nArbres(int)</signal>
+   <signal>setPers(bool)</signal>
+   <receiver>checkBox_2</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>898</x>
+     <y>346</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>971</x>
+     <y>85</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>widget</sender>
+   <signal>setOrtho(bool)</signal>
+   <receiver>checkBox</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>897</x>
+     <y>407</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1010</x>
+     <y>51</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>widget</receiver>
+   <slot>resetView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1018</x>
+     <y>230</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>891</x>
+     <y>460</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>widget</sender>
+   <signal>setDegrees(int)</signal>
+   <receiver>dial</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>903</x>
+     <y>598</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1003</x>
+     <y>185</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dial</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>widget</receiver>
+   <slot>rotateTree(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>978</x>
+     <y>182</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>894</x>
+     <y>560</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>widget</sender>
+   <signal>numTrees(int)</signal>
    <receiver>spinBox</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>805</x>
-     <y>64</y>
+     <x>898</x>
+     <y>505</y>
     </hint>
     <hint type="destinationlabel">
-     <x>975</x>
-     <y>26</y>
+     <x>927</x>
+     <y>23</y>
     </hint>
    </hints>
   </connection>
  </connections>
+ <slots>
+  <slot>rotateTree(int)</slot>
+ </slots>
 </ui>
