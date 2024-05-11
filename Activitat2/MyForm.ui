@@ -186,22 +186,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>checkBox_2</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>widget</receiver>
-   <slot>PersView(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>942</x>
-     <y>81</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>901</x>
-     <y>284</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>widget</sender>
    <signal>setPers(bool)</signal>
    <receiver>checkBox_2</receiver>
@@ -294,6 +278,22 @@
     <hint type="destinationlabel">
      <x>927</x>
      <y>23</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_2</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>widget</receiver>
+   <slot>PersView(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>938</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>892</x>
+     <y>289</y>
     </hint>
    </hints>
   </connection>

@@ -71,15 +71,17 @@ void MyGLWidget::initializeGL ()
 
 void MyGLWidget::ini_variables(){
 	makeCurrent();
-	movimentLuke = 0;
+	movimentLuke = 1;
 	rotacioLuke = 0;
 	factorAngleX = 1; 
 	factorAngleY = 0.5;
 	numtrees = 5;
 	angleArbre = 0;
 	PosicioLuke = glm::vec3(0,0,0);
+	LastPosicioLuke = glm::vec3(0,0,0);
 	emit setDegrees(angleArbre);
 	emit numTrees(numtrees);
+	float movimiento = 4.5;
 	if(escalaArbres==nullptr){
 		escalaArbres = new glm::vec3[numtrees];
 		rotacioArbres = new float[numtrees];
@@ -87,7 +89,7 @@ void MyGLWidget::ini_variables(){
 		for (int i = 0; i<numtrees; i++){
 			escalaArbres[i] = glm::vec3(glm::linearRand(0.08f, 0.13f));
 			rotacioArbres[i] = glm::linearRand(0.00f, 360.0f);
-			posicioArbres[i] = glm::vec3(glm::linearRand(-5.0f, 5.0f),0,glm::linearRand(-5.0f, 5.0f));
+			posicioArbres[i] = glm::vec3(glm::linearRand(-movimiento, movimiento),0,glm::linearRand(-movimiento, movimiento));
 		}
 	}
 	update();
@@ -96,7 +98,14 @@ void MyGLWidget::ini_variables(){
 void MyGLWidget::iniEscena ()
 {
     centreEscena = glm::vec3(0,0,0);
-    radiEscena = 25.0f;
+    glm::vec3 punto_maximo(5.0f, 2.0f, 5.0f);
+    glm::vec3 punto_minimo(-5.0f, 0.0f, -5.0f);
+
+    // Calculem el centre de l'esfera
+    glm::vec3 centro = (punto_maximo + punto_minimo) / 2.0f;
+
+    // Calculamos el radi:
+    radiEscena = glm::length(punto_maximo - centro);;
     d=2*radiEscena;
 
     ortho = false;
@@ -158,13 +167,13 @@ void MyGLWidget::projectTransformOrtho (){
 void MyGLWidget::projectTransform ()
 {
     glm::mat4 Proj(1.0f);
-		fov = glm::asin(radiEscena/d);
+		float angleFOV = glm::asin(radiEscena/d);
 		if(ra<1){
-			fov = glm::atan(glm::tan(fov)/ra);
+			angleFOV = glm::atan(glm::tan(angleFOV)/ra);
 		}
 		znear = d-radiEscena;
 		zfar = d+radiEscena;
-		fov = fov*2;
+		fov = 2*angleFOV;
 		Proj = glm::perspective (fov, ra, znear, zfar);
     glUniformMatrix4fv (projLoc, 1, GL_FALSE, &Proj[0][0]);
 }
@@ -254,6 +263,7 @@ void MyGLWidget::orthoView(bool view){
 
 void MyGLWidget::setTrees(int numTrees){
 	makeCurrent();
+	float movimiento = 4.5;
 	if (numTrees > numtrees) {
       glm::vec3* newEscalaArbres = new glm::vec3[numTrees];
       float* newRotacioArbres = new float[numTrees];
@@ -268,7 +278,7 @@ void MyGLWidget::setTrees(int numTrees){
       for (int i = numtrees; i < numTrees; ++i) {
           newEscalaArbres[i] = glm::vec3(glm::linearRand(0.08f, 0.13f));
           newRotacioArbres[i] = glm::linearRand(0.00f, 360.0f);
-          newPosicioArbres[i] = glm::vec3(glm::linearRand(-5.0f, 5.0f), 0, glm::linearRand(-5.0f, 5.0f));
+          newPosicioArbres[i] = glm::vec3(glm::linearRand(-movimiento, movimiento), 0, glm::linearRand(-movimiento, movimiento));
       }
 
       delete[] escalaArbres;
@@ -290,10 +300,9 @@ void MyGLWidget::treeTransform ()
 {
   for (int i = 0; i<numtrees; i++){
     glm::mat4 TG(1.0f);
-    TG = glm::scale(TG, glm::vec3(escalaArbres[i]));
-    //TG = glm::scale(TG, glm::vec3(escalaArbres[i])); //REVISAR
-    TG = glm::translate(TG, -centreBaseModels[TREE]);
     TG = glm::translate(TG, posicioArbres[i]);
+    TG = glm::scale(TG, glm::vec3(escalaArbres[i]));
+    TG = glm::translate(TG, -centreBaseModels[TREE]);
 		TG = glm::rotate(TG, glm::radians(rotacioArbresControlada[i]), glm::vec3(0.0, 1.0, 0.0));
   	glUniformMatrix4fv(transLoc, 1, GL_FALSE, &TG[0][0]);
   	glDrawArrays(GL_TRIANGLES, 0, models[TREE].faces().size()*3);
@@ -303,22 +312,8 @@ void MyGLWidget::treeTransform ()
 void MyGLWidget::LukeTransform()
 {
   glm::mat4 TG(1.0f);
-  float escala;
-  glm::vec3 centreLuke = glm::vec3(0,0,0);
-  calculaCapsaModel(models[LUKE], escala, 1.0, centreLuke);
-  TG = glm::scale(TG, glm::vec3(escala));
-	glm::vec3 direccionLuke = glm::vec3(-sin(rotacioLuke), 0.0f, -cos(rotacioLuke));
-	direccionLuke = glm::normalize(direccionLuke);
-	glm::vec3 posicio = (direccionLuke * -movimentLuke);
-	//std::cout << "-------------------------------------------------" << std::endl;
-	//std::cout << posicio.x << " " << posicio.z << " "<< std::endl;
-	if(posicio.x < 170.0 and posicio.x > -170.0 and posicio.z < 170.0 and posicio.z > -170.0){
-		PosicioLuke = posicio;
-		TG = glm::translate(TG, direccionLuke * -movimentLuke);
-	} else {
-		movimentLuke -= 10;
-		TG = glm::translate(TG, PosicioLuke);
-	}
+  TG = glm::translate(TG, PosicioLuke);
+  TG = glm::scale(TG, glm::vec3(escalaModels[LUKE]));
   TG = glm::translate(TG, -centreBaseModels[LUKE]);
   TG = glm::rotate(TG, rotacioLuke, glm::vec3(0.0, 1.0, 0.0));
   glUniformMatrix4fv(transLoc, 1, GL_FALSE, &TG[0][0]);
@@ -337,15 +332,64 @@ void MyGLWidget::keyPressEvent(QKeyEvent* event)
   makeCurrent();
   switch (event->key()) {
     case Qt::Key_Up: {
-			movimentLuke += 10.0;
+    	bool delante, detras, derecha, izquierda;
+    	delante = detras = derecha = izquierda = false;
+			if ((rotacioLuke >= -0.1f and rotacioLuke < M_PI/2.0) or (rotacioLuke > 1.5*M_PI+0.5f)) { // Mirando hacia adelante
+				//PosicioLuke.z += movimentLuke;
+				delante = true;
+			} else if (rotacioLuke > (M_PI/2.0)+0.1f and rotacioLuke < 1.5f*M_PI) { // Mirando hacia atrás
+					//PosicioLuke.z += -movimentLuke;
+					detras = true;
+			}
+
+			if (rotacioLuke > M_PI+0.6f) { // Mirando hacia la derecha
+					//PosicioLuke.x += -movimentLuke;
+					derecha = true;
+			} else if (rotacioLuke > 0.1f and rotacioLuke < M_PI) { // Mirando hacia la izquierda
+				izquierda = true;
+				//PosicioLuke.x += movimentLuke;
+			}
+			if (delante and PosicioLuke.z<5) { 
+					if((izquierda and PosicioLuke.x<5) or (derecha and PosicioLuke.x>-5)){
+						PosicioLuke.z += movimentLuke;
+					} else if(!izquierda and !derecha){
+						PosicioLuke.z += movimentLuke;
+					}
+			} else if(detras and PosicioLuke.z>-5){
+   			if((izquierda and PosicioLuke.x<5) or (derecha and PosicioLuke.x>-5)){
+						PosicioLuke.z += -movimentLuke;
+					} else if(!izquierda and !derecha){
+						PosicioLuke.z += -movimentLuke;
+					} 
+			} 
+			if(izquierda and PosicioLuke.x<5){
+				if((delante and PosicioLuke.z<5) or (detras and PosicioLuke.z>-5)){
+					PosicioLuke.x += movimentLuke;
+				} else if(!delante and !detras){
+					PosicioLuke.x += movimentLuke;
+				}
+			
+			} else if(derecha and PosicioLuke.x>-5) {
+				if((delante and PosicioLuke.z<5) or (detras and PosicioLuke.z>-5)){
+					PosicioLuke.x += -movimentLuke;
+				} else if(!delante and !detras){
+					PosicioLuke.x += -movimentLuke;
+				}
+			}
       break;
     }
     case Qt::Key_Left: { 	
-			rotacioLuke -= M_PI/4;
+			rotacioLuke += M_PI/4;
+			if (rotacioLuke >= (2 * M_PI)-0.5f) {
+        rotacioLuke = 0; 
+    	}
       break;
     }
     case Qt::Key_Right: {
-			rotacioLuke += M_PI/4;
+    	if (rotacioLuke <= 0.3f) {
+        rotacioLuke = 2 * M_PI;
+    	}
+			rotacioLuke -= M_PI/4;
       break;
     }
     case Qt::Key_C: { 

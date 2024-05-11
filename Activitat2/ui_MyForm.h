@@ -111,13 +111,13 @@ public:
         QObject::connect(pushButton, SIGNAL(clicked()), MyForm, SLOT(close()));
         QObject::connect(spinBox, SIGNAL(valueChanged(int)), widget, SLOT(setTrees(int)));
         QObject::connect(checkBox, SIGNAL(clicked(bool)), widget, SLOT(orthoView(bool)));
-        QObject::connect(checkBox_2, SIGNAL(clicked(bool)), widget, SLOT(PersView(bool)));
         QObject::connect(widget, SIGNAL(setPers(bool)), checkBox_2, SLOT(setChecked(bool)));
         QObject::connect(widget, SIGNAL(setOrtho(bool)), checkBox, SLOT(setChecked(bool)));
         QObject::connect(pushButton_2, SIGNAL(clicked()), widget, SLOT(resetView()));
         QObject::connect(widget, SIGNAL(setDegrees(int)), dial, SLOT(setValue(int)));
         QObject::connect(dial, SIGNAL(valueChanged(int)), widget, SLOT(rotateTree(int)));
         QObject::connect(widget, SIGNAL(numTrees(int)), spinBox, SLOT(setValue(int)));
+        QObject::connect(checkBox_2, SIGNAL(toggled(bool)), widget, SLOT(PersView(bool)));
 
         QMetaObject::connectSlotsByName(MyForm);
     } // setupUi

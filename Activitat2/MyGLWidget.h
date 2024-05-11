@@ -88,6 +88,8 @@ signals:
     bool ortho;
 		// Control de la posicio de Luke
 		glm::vec3 PosicioLuke;
+		// Control de l'ultima posicio de Luke
+		glm::vec3 LastPosicioLuke;
 
     GLuint vertexLoc, colorLoc;
 
