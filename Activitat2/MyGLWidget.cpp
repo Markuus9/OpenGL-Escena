@@ -71,16 +71,23 @@ void MyGLWidget::initializeGL ()
 
 void MyGLWidget::ini_variables(){
 	makeCurrent();
+	// Distancia de desplasament de Luke
 	movimentLuke = 1;
+	// Valor de la rotació de Luke
 	rotacioLuke = 0;
+	// Multiplicador rotació camara 
 	factorAngleX = 1; 
 	factorAngleY = 0.5;
+	// Valor inicial d'arbres
 	numtrees = 5;
+	// Rotació inicial dels Arbres (Dial i +/-)
 	angleArbre = 0;
+	// Posició inicial Luke
 	PosicioLuke = glm::vec3(0,0,0);
-	LastPosicioLuke = glm::vec3(0,0,0);
+	// Cambiar l'estat de l'interficie
 	emit setDegrees(angleArbre);
 	emit numTrees(numtrees);
+	// Calcul inicial de la posició dels arbres/rotació/escala
 	float movimiento = 4.5;
 	if(escalaArbres==nullptr){
 		escalaArbres = new glm::vec3[numtrees];
@@ -98,14 +105,14 @@ void MyGLWidget::ini_variables(){
 void MyGLWidget::iniEscena ()
 {
     centreEscena = glm::vec3(0,0,0);
-    glm::vec3 punto_maximo(5.0f, 2.0f, 5.0f);
-    glm::vec3 punto_minimo(-5.0f, 0.0f, -5.0f);
+    glm::vec3 punt_max(5.0f, 2.0f, 5.0f);
+    glm::vec3 punt_min(-5.0f, 0.0f, -5.0f);
 
-    // Calculem el centre de l'esfera
-    glm::vec3 centro = (punto_maximo + punto_minimo) / 2.0f;
+    // Calculem el centre de l'escena
+    glm::vec3 centro = (punt_max + punt_min) / 2.0f;
 
     // Calculamos el radi:
-    radiEscena = glm::length(punto_maximo - centro);;
+    radiEscena = glm::length(punt_max - centro);;
     d=2*radiEscena;
 
     ortho = false;
@@ -199,6 +206,7 @@ void MyGLWidget::paintGL ()
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
   glBindVertexArray (0);
+  // Depenen de la vista escollida, activem les respectives funcions
   if(!ortho){
     	viewTransform();
     	projectTransform();
@@ -224,6 +232,7 @@ void MyGLWidget::resizeGL (int w, int h)
 #endif
 }
 
+// Funció per interactuar amb el dial
 void MyGLWidget::rotateTree(int degrees){
 	makeCurrent();
 	angleArbre = degrees;
@@ -233,6 +242,7 @@ void MyGLWidget::rotateTree(int degrees){
 	update();
 }
 
+// Restablir tota l'escena:
 void MyGLWidget::resetView(){
 	makeCurrent();
 	initializeGL();
@@ -241,6 +251,7 @@ void MyGLWidget::resetView(){
 	update();
 }
 
+// Funció per interactuar amb el CheckBox
 void MyGLWidget::PersView(bool view){
 	makeCurrent();
 	ortho = !view;
@@ -251,6 +262,7 @@ void MyGLWidget::PersView(bool view){
 	update();
 }
 
+// Funció per interactuar amb el CheckBox
 void MyGLWidget::orthoView(bool view){
 	makeCurrent();
 	ortho = view;
@@ -261,6 +273,7 @@ void MyGLWidget::orthoView(bool view){
 	update();
 }
 
+// Funció per afegir o treure arbres
 void MyGLWidget::setTrees(int numTrees){
 	makeCurrent();
 	float movimiento = 4.5;
@@ -332,22 +345,24 @@ void MyGLWidget::keyPressEvent(QKeyEvent* event)
   makeCurrent();
   switch (event->key()) {
     case Qt::Key_Up: {
+    	// VERSION 2 DEL MOVIMIENTO DEL PERSONAJE
+    	PosicioLuke += glm::vec3(sin(rotacioLuke)*movimentLuke, 0, cos(rotacioLuke)*movimentLuke);
+    	if(PosicioLuke.z > 5 or PosicioLuke.z < -5 or PosicioLuke.x > 5 or PosicioLuke.x < -5){
+    	  PosicioLuke -= glm::vec3(sin(rotacioLuke)*movimentLuke, 0, cos(rotacioLuke)*movimentLuke);
+    	}
+    	/* VERSION 1 DEL MOVIMIENTO DEL PERSONAJE (FUNCIONA UN POCO MEJOR QUE LA VERSION 2, PERO ES MUCHO MAS COSTOSA)
     	bool delante, detras, derecha, izquierda;
     	delante = detras = derecha = izquierda = false;
 			if ((rotacioLuke >= -0.1f and rotacioLuke < M_PI/2.0) or (rotacioLuke > 1.5*M_PI+0.5f)) { // Mirando hacia adelante
-				//PosicioLuke.z += movimentLuke;
 				delante = true;
 			} else if (rotacioLuke > (M_PI/2.0)+0.1f and rotacioLuke < 1.5f*M_PI) { // Mirando hacia atrás
-					//PosicioLuke.z += -movimentLuke;
 					detras = true;
 			}
 
 			if (rotacioLuke > M_PI+0.6f) { // Mirando hacia la derecha
-					//PosicioLuke.x += -movimentLuke;
 					derecha = true;
 			} else if (rotacioLuke > 0.1f and rotacioLuke < M_PI) { // Mirando hacia la izquierda
 				izquierda = true;
-				//PosicioLuke.x += movimentLuke;
 			}
 			if (delante and PosicioLuke.z<5) { 
 					if((izquierda and PosicioLuke.x<5) or (derecha and PosicioLuke.x>-5)){
@@ -375,7 +390,7 @@ void MyGLWidget::keyPressEvent(QKeyEvent* event)
 				} else if(!delante and !detras){
 					PosicioLuke.x += -movimentLuke;
 				}
-			}
+			} */
       break;
     }
     case Qt::Key_Left: { 	

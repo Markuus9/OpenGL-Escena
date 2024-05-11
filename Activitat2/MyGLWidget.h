@@ -47,9 +47,7 @@ class MyGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core  {
    float *rotacioArbres = nullptr;
    float rotacioArbresControlada[30];
    int numtrees;
-  
-   // glm::vec3 dirLuke, posLuke;
-   // float rotLuke;
+   
 
      void calculaCapsaModel (Model &p, float &escala, float alcadaDesitjada, glm::vec3 &CentreBase);
     // creaBuffersModels - Carreguem els fitxers obj i fem la inicialització dels diferents VAOS i VBOs
@@ -84,12 +82,8 @@ signals:
     // rotació arbres amb + i -
     int angleArbre;
     
-    // bools per controlar si càmera en planta o no
+    // bool per controlar  tipus de camara seleccionada
     bool ortho;
-		// Control de la posicio de Luke
-		glm::vec3 PosicioLuke;
-		// Control de l'ultima posicio de Luke
-		glm::vec3 LastPosicioLuke;
 
     GLuint vertexLoc, colorLoc;
 
@@ -116,6 +110,8 @@ signals:
     float factorAngleX, factorAngleY;
 
     // Internal vars
+    // Control de la posicio de Luke
+		glm::vec3 PosicioLuke;
     float radiEscena, rotacioLuke, movimentLuke;
     float fov, ra=1, znear, zfar, d;
     glm::vec3 centreEscena, obs, vrp, up;
