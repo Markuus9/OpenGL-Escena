@@ -3,7 +3,7 @@
 Este proyecto es una aplicación gráfica desarrollada con **OpenGL** y **Qt** que simula el movimiento de un personaje en un entorno 3D. La aplicación está diseñada para ser educativa y se enfoca en los conceptos básicos de programación gráfica, interacción 3D y uso de la biblioteca Qt para construir interfaces gráficas.
 
 ![Vista de la interfaz de usuario](UI.png)
-![Movimiento Personaje](luke.gif)
+![Movimiento Personaje](movimiento.gif)
 
 ## Tabla de Contenidos
 
@@ -39,9 +39,9 @@ Este proyecto es una aplicación gráfica desarrollada con **OpenGL** y **Qt** q
     #compile the code
     make
     #run the program
-    ./activitat2
+    ./Exercici-2
     ```
 
 2. **Controles de la UI**:
-    - **Movimiento del Barco**: Utiliza las teclas W/S para la dirección del barco, A/D para el control del faro, y las flechas ↑/↓ para el control de la hora.
-    - **Control de Luces**: Ajusta la intensidad, el color y la posición de la fuente de luz principal a través de los sliders y selectores en la UI.
+    - **Movimiento**: Utiliza las flechas para la dirección del personaje, .
+    - **Control del entorno**: Ajusta el numero de arboles, la rotacion y la perspectiva a través de los sliders y selectores en la UI.
